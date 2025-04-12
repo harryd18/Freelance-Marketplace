@@ -1,80 +1,86 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { registerUser } from "../api/api";
 
 const SignUp = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("client");
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "client"
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const [error, setError] = useState("");
 
-    const response = await fetch("http://localhost:8000/api/register.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, password, role }),
-    });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-    const data = await response.json();
-    console.log("Register Response:", data);
-
-    if (data.message) {
-      alert("Registration successful! Please log in.");
+  const handleSubmit = async () => {
+    setError("");
+    try {
+      const res = await registerUser(form.name, form.email, form.password, form.role);
+      alert(res.message || "Registered successfully!");
       window.location.href = "/login";
-    } else {
-      alert(data.error || "Registration failed.");
+    } catch (err) {
+      console.error(err);
+      setError("Registration failed");
     }
   };
 
   return (
-    <div className="container mt-5">
-      <h2>Sign Up</h2>
-      <form onSubmit={handleSubmit}>
+    <div
+      className="d-flex justify-content-center align-items-center vh-100"
+      style={{
+        backgroundImage: `url('https://images.unsplash.com/photo-1522199710521-72d69614c702?auto=format&fit=crop&w=1650&q=80')`,
+        backgroundSize: "cover",
+        backgroundPosition: "center"
+      }}
+    >
+      <div className="bg-light p-5 rounded shadow" style={{ width: "100%", maxWidth: "400px" }}>
+        <h2 className="text-center mb-4">Freelance Marketplace</h2>
+        <h4 className="text-center mb-3">Sign Up</h4>
         <input
+          className="form-control my-2"
           type="text"
+          name="name"
           placeholder="Name"
-          className="form-control mb-2"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={form.name}
+          onChange={handleChange}
         />
         <input
+          className="form-control my-2"
           type="email"
+          name="email"
           placeholder="Email"
-          className="form-control mb-2"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={form.email}
+          onChange={handleChange}
         />
         <input
+          className="form-control my-2"
           type="password"
+          name="password"
           placeholder="Password"
-          className="form-control mb-2"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={form.password}
+          onChange={handleChange}
         />
         <select
-          className="form-control mb-3"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
+          className="form-select my-2"
+          name="role"
+          value={form.role}
+          onChange={handleChange}
         >
           <option value="client">Client</option>
           <option value="freelancer">Freelancer</option>
         </select>
-        <button type="submit" className="btn btn-primary">
+        <button className="btn btn-primary w-100 mt-3" onClick={handleSubmit}>
           Register
         </button>
-      </form>
-
-      <p className="mt-3">
-        Already have an account?{" "}
-        <button
-          className="btn btn-link p-0"
-          onClick={() => (window.location.href = "/login")}
-        >
-          Login
-        </button>
-      </p>
+        {error && <p className="text-danger mt-2 text-center">{error}</p>}
+        <p className="mt-3 text-center">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
+      </div>
     </div>
   );
 };
