@@ -1,8 +1,14 @@
 <?php
-header("Access-Control-Allow-Origin: *");
+
+header("Access-Control-Allow-Origin: http://localhost:3000");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
+    http_response_code(200);
+    exit;
+}
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -18,7 +24,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 
 $input = file_get_contents("php://input");
-file_put_contents("debug.log", print_r($input, true)); 
 $data = json_decode($input, true);
 
 if (!$data || !isset($data["name"]) || !isset($data["email"]) || !isset($data["password"]) || !isset($data["role"])) {
@@ -28,13 +33,11 @@ if (!$data || !isset($data["name"]) || !isset($data["email"]) || !isset($data["p
 
 $name = htmlspecialchars(strip_tags($data["name"]));
 $email = htmlspecialchars(strip_tags($data["email"]));
-$password = $data["password"]; 
+$password = $data["password"];
 $role = htmlspecialchars(strip_tags($data["role"]));
 
-// Hash the password before storing
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-// Insert into DB
 $query = "INSERT INTO users (name, email, password, role) VALUES (:name, :email, :password, :role)";
 $stmt = $conn->prepare($query);
 
