@@ -17,16 +17,27 @@ include_once "../config/db.php";
 
 $database = new Database();
 $conn = $database->getConnection();
+$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    echo json_encode(["error" => "Only POST method is allowed"]);
+// DEBUG LOGGING
+$debugLog = fopen("debug_register.txt", "a");
+fwrite($debugLog, "\n[Register] --- " . date("Y-m-d H:i:s") . " ---\n");
+
+fwrite($debugLog, "DB Used: freelance_marketplace\n");
+
+$input = file_get_contents("php://input");
+fwrite($debugLog, "Raw Input: $input\n");
+
+$data = json_decode($input, true);
+
+if (!$data) {
+    fwrite($debugLog, "JSON Decode Failed\n");
+    echo json_encode(["error" => "Invalid JSON"]);
     exit;
 }
 
-$input = file_get_contents("php://input");
-$data = json_decode($input, true);
-
-if (!$data || !isset($data["name"]) || !isset($data["email"]) || !isset($data["password"]) || !isset($data["role"])) {
+if (!isset($data["name"], $data["email"], $data["password"], $data["role"])) {
+    fwrite($debugLog, "Missing field(s)\n");
     echo json_encode(["error" => "All fields are required"]);
     exit;
 }
@@ -34,10 +45,11 @@ if (!$data || !isset($data["name"]) || !isset($data["email"]) || !isset($data["p
 $name = htmlspecialchars(strip_tags($data["name"]));
 $email = htmlspecialchars(strip_tags($data["email"]));
 $password = $data["password"];
-$role = htmlspecialchars(strip_tags($data["role"]));
+$role = strtolower(htmlspecialchars(strip_tags($data["role"])));
 
 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+// Save to DB
 $query = "INSERT INTO users (name, email, password, role) VALUES (:name, :email, :password, :role)";
 $stmt = $conn->prepare($query);
 
@@ -49,8 +61,16 @@ try {
         ":role" => $role
     ]);
 
+    fwrite($debugLog, "User registered: $email\n");
     echo json_encode(["message" => "User registered successfully"]);
 } catch (PDOException $e) {
-    echo json_encode(["error" => "Email already exists or query failed", "details" => $e->getMessage()]);
+    http_response_code(500);
+    fwrite($debugLog, "Registration error: " . $e->getMessage() . "\n");
+    echo json_encode([
+        "error" => "Failed to register user",
+        "details" => $e->getMessage()
+    ]);
 }
+
+fclose($debugLog);
 ?>

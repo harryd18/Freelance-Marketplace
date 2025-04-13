@@ -63,9 +63,9 @@ function FreelancerDashboard() {
   }
 
   return (
-    <div className="container mt-4">
+    <div className="freelancer-dashboard">
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Freelancer Dashboard</h2>
+        <h2 className="dashboard-title">Freelancer Dashboard</h2>
         <button
           className="btn btn-danger"
           onClick={function () {
@@ -81,9 +81,11 @@ function FreelancerDashboard() {
         <p>Loading...</p>
       ) : user ? (
         <>
-          <p>Welcome, {user.name}</p>
-          <p>Email: {user.email}</p>
-          <p>Role: {user.role}</p>
+          <div className="glass-box">
+            <p><strong>Welcome:</strong> {user.name}</p>
+            <p><strong>Email:</strong> {user.email}</p>
+            <p><strong>Role:</strong> {user.role}</p>
+          </div>
 
           <h4 className="mt-4">Available Jobs</h4>
           <div className="row">
@@ -91,7 +93,7 @@ function FreelancerDashboard() {
               jobs.map(function (job) {
                 return (
                   <div className="col-md-4 mb-3" key={job.id}>
-                    <div className="card shadow-sm">
+                    <div className="card">
                       <div className="card-body">
                         <h5 className="card-title">{job.title}</h5>
                         <p className="card-text">{job.description}</p>
@@ -156,6 +158,109 @@ function FreelancerDashboard() {
       ) : (
         <p>Error: No user info</p>
       )}
+
+      <style>{`
+        .freelancer-dashboard {
+          background: linear-gradient(135deg, #e3f2fd, #ffffff);
+          min-height: 100vh;
+          padding: 2rem;
+          color: #333;
+          font-family: 'Segoe UI', sans-serif;
+        }
+
+        .glass-box {
+          background: rgba(255, 255, 255, 0.6);
+          border-radius: 12px;
+          padding: 1.5rem;
+          margin-bottom: 2rem;
+          box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+          backdrop-filter: blur(10px);
+        }
+
+        .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #007cf0, #00dfd8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1.5rem;
+      }
+
+
+        .card {
+          border: none;
+          border-radius: 12px;
+          background: #ffffff;
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+          transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+          transform: translateY(-5px);
+        }
+
+        .card-body {
+          padding: 1.2rem;
+        }
+
+        .card-title {
+          font-weight: bold;
+          font-size: 1.1rem;
+          margin-bottom: 0.6rem;
+        }
+
+        .card-text {
+          color: #444;
+          font-size: 0.95rem;
+        }
+
+        .btn-primary {
+          background-color: #42a5f5;
+          border: none;
+          font-weight: 500;
+          padding: 5px 12px;
+          font-size: 0.9rem;
+        }
+
+        .btn-primary:hover {
+          background-color: #1e88e5;
+        }
+
+        .btn-success {
+          background-color: #66bb6a;
+          border: none;
+          font-weight: 500;
+          padding: 5px 14px;
+          font-size: 0.9rem;
+        }
+
+        .btn-success:hover {
+          background-color: #43a047;
+        }
+
+        .btn-secondary {
+          background-color: #9e9e9e;
+          border: none;
+          font-weight: 500;
+          padding: 5px 14px;
+          font-size: 0.9rem;
+        }
+
+        .btn-danger {
+          background-color: #ef5350;
+          border: none;
+        }
+
+        input.form-control {
+          border-radius: 8px;
+          height: 36px;
+          font-size: 0.9rem;
+        }
+
+        h2, h4 {
+          color: #263238;
+        }
+      `}</style>
     </div>
   );
 }

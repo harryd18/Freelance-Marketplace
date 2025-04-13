@@ -19,7 +19,7 @@ const SignUp = () => {
   const handleSubmit = async () => {
     setError("");
     try {
-      const res = await registerUser(form.name, form.email, form.password, form.role);
+      const res = await registerUser(form);
       alert(res.message || "Registered successfully!");
       window.location.href = "/login";
     } catch (err) {
