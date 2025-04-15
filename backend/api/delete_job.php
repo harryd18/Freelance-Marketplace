@@ -17,6 +17,19 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
+$headers = getallheaders();
+$authHeader = $headers["Authorization"] ?? '';
+
+if (!$authHeader || !str_starts_with($authHeader, "Bearer ")) {
+    http_response_code(403);
+    echo json_encode(["error" => "No valid token"]);
+    exit;
+}
+
+$token = trim(str_replace("Bearer", "", $authHeader));
+$parts = explode(':', $token);
+$userIdFromToken = end($parts);
+
 $input = json_decode(file_get_contents("php://input"), true);
 
 if (!isset($input["job_id"])) {
@@ -29,12 +42,27 @@ $jobId = $input["job_id"];
 $database = new Database();
 $conn = $database->getConnection();
 
-$query = "DELETE FROM jobs WHERE id = :id";
-$stmt = $conn->prepare($query);
-$stmt->bindParam(":id", $jobId);
+// Check if the job belongs to the client
+$checkQuery = "SELECT * FROM jobs WHERE id = :id AND client_id = :clientId";
+$checkStmt = $conn->prepare($checkQuery);
+$checkStmt->execute([
+    ":id" => $jobId,
+    ":clientId" => $userIdFromToken
+]);
+
+if ($checkStmt->rowCount() === 0) {
+    http_response_code(403);
+    echo json_encode(["error" => "Not authorized to delete this job"]);
+    exit;
+}
+
+// Delete the job
+$deleteQuery = "DELETE FROM jobs WHERE id = :id";
+$deleteStmt = $conn->prepare($deleteQuery);
+$deleteStmt->bindParam(":id", $jobId);
 
 try {
-    $stmt->execute();
+    $deleteStmt->execute();
     echo json_encode(["message" => "Job deleted successfully"]);
 } catch (PDOException $e) {
     echo json_encode(["error" => "Failed to delete job", "details" => $e->getMessage()]);

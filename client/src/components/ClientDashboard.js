@@ -51,14 +51,15 @@ function ClientDashboard() {
     fetch("http://localhost:8000/api/delete_job.php", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}` // ✅ Added token here
       },
       body: JSON.stringify({ job_id: jobId })
     })
       .then(res => res.json())
       .then(data => {
         alert(data.message || "Job deleted");
-        setJobs(jobs.filter(job => job.id !== jobId));
+        setJobs(jobs.filter(job => job.id !== jobId)); // ✅ Remove from UI
       })
       .catch(err => {
         console.error("Delete Error:", err);
@@ -109,7 +110,7 @@ function ClientDashboard() {
           <h2 className="fw-bold text-white">Client Dashboard</h2>
           <button className="btn btn-outline-light" onClick={handleLogout}>Logout</button>
         </div>
-  
+
         {user && (
           <div className="mb-4 glass-card p-3 text-white">
             <p><strong>Welcome:</strong> {user.name}</p>
@@ -117,7 +118,7 @@ function ClientDashboard() {
             <p><strong>Role:</strong> {user.role}</p>
           </div>
         )}
-  
+
         <div className="glass-card p-4 mb-5">
           <h5 className="mb-3 text-white">Post a New Job</h5>
           <div className="row g-2">
@@ -141,7 +142,7 @@ function ClientDashboard() {
             </div>
           </div>
         </div>
-  
+
         <h5 className="text-white">Your Posted Jobs</h5>
         {jobs.length === 0 ? (
           <p className="text-light">No jobs posted yet.</p>
@@ -179,120 +180,81 @@ function ClientDashboard() {
           ))
         )}
       </div>
-  
+
       <style>{`
-  .client-dashboard-container {
-    background: linear-gradient(135deg, #1e1d2b, #3a2f63);
-    min-height: 100vh;
-    color: #ffffff;
-    padding: 2rem;
-  }
+        .client-dashboard-container {
+          background: linear-gradient(135deg, #1e1d2b, #3a2f63);
+          min-height: 100vh;
+          color: #ffffff;
+          padding: 2rem;
+        }
 
-  .glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
+        .glass-card {
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(10px);
+          border-radius: 18px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          padding: 1.5rem;
+          margin-bottom: 1.5rem;
+        }
 
-  .form-control {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 10px;
-    padding: 0.6rem 0.75rem;
-    height: 40px;
-  }
+        .form-control {
+          background: rgba(255, 255, 255, 0.08);
+          color: #ffffff;
+          border: 1px solid rgba(255,255,255,0.2);
+          border-radius: 10px;
+          padding: 0.6rem 0.75rem;
+          height: 40px;
+        }
 
-  textarea.form-control {
-    height: 80px;
-    resize: none;
-  }
+        textarea.form-control {
+          height: 80px;
+          resize: none;
+        }
 
-  textarea.form-control:focus,
-  input.form-control:focus {
-    color: #ffffff;   
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid #777;
-    outline: none;
-    box-shadow: none;
-  }
+        .form-control:focus {
+          outline: none;
+          border: 1px solid #6c63ff;
+          background: rgba(255, 255, 255, 0.12);
+          box-shadow: none;
+        }
 
-  .form-control:focus {
-    outline: none;
-    border: 1px solid #6c63ff;
-    background: rgba(255, 255, 255, 0.12);
-    box-shadow: none;
-  }
+        .form-control::placeholder {
+          color: #cccccc;
+        }
 
-  .form-control::placeholder {
-    color: #cccccc;
-  }
+        .btn-success {
+          background-color: #28a745;
+          border: none;
+          padding: 10px 20px;
+          height: 40px;
+          font-size: 14px;
+          font-weight: bold;
+          transition: background 0.3s ease;
+          color: white;
+        }
 
-  .job-input-wrapper {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
+        .btn-outline-warning {
+          background-color: #ffc107;
+          color: black;
+        }
 
-  .form-control,
-  .job-input-wrapper input,
-  .job-input-wrapper textarea {
-    flex: 1;
-    font-size: 14px;
-  }
+        .btn-outline-danger {
+          background-color: #dc3545;
+          color: white;
+        }
 
-  .btn-success {
-    background-color: #28a745;
-    border: none;
-    padding: 10px 20px;
-    height: 40px;
-    font-size: 14px;
-    font-weight: bold;
-    transition: background 0.3s ease;
-    color: white;
-  }
+        .btn-outline-warning:hover {
+          background-color: #e0a800;
+        }
 
-  .btn-success:hover {
-    background-color: #218838;
-  }
-
-  .btn-outline-warning,
-  .btn-outline-danger {
-    border: none;
-    font-size: 13px;
-    padding: 5px 12px;
-    font-weight: 500;
-  }
-
-  .btn-outline-warning {
-    background-color: #ffc107;
-    color: black;
-  }
-
-  .btn-outline-danger {
-    background-color: #dc3545;
-    color: white;
-  }
-
-  .btn-outline-warning:hover {
-    background-color: #e0a800;
-  }
-
-  .btn-outline-danger:hover {
-    background-color: #c82333;
-  }
-`}</style>
-
-
-
-
+        .btn-outline-danger:hover {
+          background-color: #c82333;
+        }
+      `}</style>
     </div>
   );
-  
 }
 
 export default ClientDashboard;
