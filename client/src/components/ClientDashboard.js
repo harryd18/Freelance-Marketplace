@@ -16,8 +16,9 @@ function ClientDashboard() {
     })
       .then(res => res.json())
       .then(data => {
+        console.log("Protected Response:", data);
         setUser(data.user);
-        setJobs(data.data.userProjects);
+        setJobs(data?.data?.userProjects || []);
       })
       .catch(err => console.error("Error fetching user data", err));
   }, []);
@@ -52,14 +53,14 @@ function ClientDashboard() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}` // ✅ Added token here
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({ job_id: jobId })
     })
       .then(res => res.json())
       .then(data => {
         alert(data.message || "Job deleted");
-        setJobs(jobs.filter(job => job.id !== jobId)); // ✅ Remove from UI
+        setJobs(jobs.filter(job => job.id !== jobId));
       })
       .catch(err => {
         console.error("Delete Error:", err);
@@ -170,10 +171,23 @@ function ClientDashboard() {
                   <h6 className="fw-bold text-white">{job.title}</h6>
                   <p className="text-light">{job.description}</p>
                   <p className="text-info fw-semibold">Budget: ${job.budget}</p>
-                  <div className="d-flex gap-2">
+                  <div className="d-flex gap-2 mb-3">
                     <button className="btn btn-outline-warning btn-sm" onClick={() => handleEdit(job)}>Edit</button>
                     <button className="btn btn-outline-danger btn-sm" onClick={() => handleDelete(job.id)}>Delete</button>
                   </div>
+
+                  {job.bids && job.bids.length > 0 && (
+                    <div className="text-light mt-2">
+                      <strong>Bids Received:</strong>
+                      <ul className="mt-1">
+                        {job.bids.map((bid, index) => (
+                          <li key={index}>
+                            {bid.freelancer_name} - ${bid.amount}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -199,25 +213,28 @@ function ClientDashboard() {
           margin-bottom: 1.5rem;
         }
 
-        .form-control {
+        input.form-control,
+        textarea.form-control {
           background: rgba(255, 255, 255, 0.08);
-          color: #ffffff;
+          color: white !important;
           border: 1px solid rgba(255,255,255,0.2);
           border-radius: 10px;
           padding: 0.6rem 0.75rem;
-          height: 40px;
+          font-size: 14px;
+        }
+
+        input.form-control:focus,
+        textarea.form-control:focus {
+          color: white !important;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid #777;
+          outline: none;
+          box-shadow: none;
         }
 
         textarea.form-control {
           height: 80px;
           resize: none;
-        }
-
-        .form-control:focus {
-          outline: none;
-          border: 1px solid #6c63ff;
-          background: rgba(255, 255, 255, 0.12);
-          box-shadow: none;
         }
 
         .form-control::placeholder {

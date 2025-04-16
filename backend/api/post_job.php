@@ -23,7 +23,7 @@ if (!$authHeader || !str_starts_with($authHeader, "Bearer ")) {
 
 $token = trim(str_replace("Bearer", "", $authHeader));
 $parts = explode(":", $token);
-$clientId = end($parts);  // This is your user/client ID
+$clientId = end($parts);  // This is for user/client ID
 
 // Step 2: Parse JSON input
 $input = json_decode(file_get_contents("php://input"), true);

@@ -83,7 +83,20 @@ if ($user["role"] === "client") {
     $jobStmt = $conn->prepare($jobQuery);
     $jobStmt->bindParam(":clientId", $user["id"]);
     $jobStmt->execute();
-    $data["userProjects"] = $jobStmt->fetchAll(PDO::FETCH_ASSOC);
+    $jobs = $jobStmt->fetchAll(PDO::FETCH_ASSOC);
+
+    foreach ($jobs as &$job) {
+        $bidQuery = "SELECT b.amount, u.name AS freelancer_name
+                     FROM bids b
+                     JOIN users u ON b.freelancer_id = u.id
+                     WHERE b.job_id = :jobId";
+        $bidStmt = $conn->prepare($bidQuery);
+        $bidStmt->bindParam(":jobId", $job['id']);
+        $bidStmt->execute();
+        $job['bids'] = $bidStmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    $data["userProjects"] = $jobs;
 } elseif ($user["role"] === "freelancer") {
     $jobQuery = "SELECT id, title, description, budget FROM jobs ORDER BY created_at DESC";
     $jobStmt = $conn->prepare($jobQuery);
