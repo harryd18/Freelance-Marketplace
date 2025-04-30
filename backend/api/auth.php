@@ -1,5 +1,4 @@
 <?php
-
 header("Access-Control-Allow-Origin: http://localhost:3000");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
@@ -13,6 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 }
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    http_response_code(405);
     echo json_encode(["error" => "Only POST requests allowed"]);
     exit;
 }
@@ -22,7 +22,8 @@ $email = $input["email"] ?? '';
 $password = $input["password"] ?? '';
 
 if (!$email || !$password) {
-    echo json_encode(["error" => "Missing credentials"]);
+    http_response_code(400);
+    echo json_encode(["error" => "Missing email or password"]);
     exit;
 }
 
@@ -36,9 +37,16 @@ $stmt->execute();
 
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user || !password_verify($password, $user["password"])) {
+// 🔍 Debug: log failures
+if (!$user) {
     http_response_code(401);
-    echo json_encode(["error" => "Invalid credentials"]);
+    echo json_encode(["error" => "User not found"]);
+    exit;
+}
+
+if (!password_verify($password, $user["password"])) {
+    http_response_code(401);
+    echo json_encode(["error" => "Incorrect password"]);
     exit;
 }
 
