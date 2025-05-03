@@ -13,21 +13,25 @@ class Database {
     public function getConnection() {
         $this->conn = null;
 
-        // Load .env
-        $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
-        $dotenv->load();
+        // Load from .env in local only
+        $envPath = __DIR__ . '/../.env';
+        if (file_exists($envPath)) {
+            $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+            $dotenv->load();
+        }
 
-        $this->host = $_ENV['DB_HOST'] ?? null;
-        $this->db_name = $_ENV['DB_NAME'] ?? null;
-        $this->username = $_ENV['DB_USERNAME'] ?? null;
-        $this->password = $_ENV['DB_PASSWORD'] ?? null;
+        // Read from env (Render or local .env)
+        $this->host     = getenv('DB_HOST') ?: $_ENV['DB_HOST'] ?? null;
+        $this->db_name  = getenv('DB_NAME') ?: $_ENV['DB_NAME'] ?? null;
+        $this->username = getenv('DB_USERNAME') ?: $_ENV['DB_USERNAME'] ?? null;
+        $this->password = getenv('DB_PASSWORD') ?: $_ENV['DB_PASSWORD'] ?? null;
 
         try {
             $ssl_ca = __DIR__ . "/../config/certs/DigiCertGlobalRootG2.crt.pem";
 
             $options = [
                 PDO::MYSQL_ATTR_SSL_CA => $ssl_ca,
-                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false, // Important on Mac
+                PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ];
