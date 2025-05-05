@@ -57,7 +57,8 @@
 //   };
   
 
-const API_BASE = "https://freelance-marketplace-aetf.onrender.com";
+const API_BASE = "https://freelance-marketplace-aetf.onrender.com/api";
+
 
 // LOGIN
 export const loginUser = async (email, password) => {
