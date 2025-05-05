@@ -4,7 +4,7 @@
 // header("Access-Control-Allow-Headers: Content-Type, Authorization");
 // header("Content-Type: application/json; charset=UTF-8");
 
-require_once __DIR__ . "/cors.php";  
+require_once __DIR__ . "/cors.php";
 require_once __DIR__ . "/../config/db.php";
 
 // if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
@@ -12,16 +12,9 @@ require_once __DIR__ . "/../config/db.php";
 //     exit;
 // }
 
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    http_response_code(405);
-    echo json_encode(["error" => "Only POST requests allowed"]);
-    exit;
-}
-
-// Parse JSON input
 $input = json_decode(file_get_contents("php://input"), true);
-$email = $input["email"] ?? '';
-$password = $input["password"] ?? '';
+$email = trim($input["email"] ?? '');
+$password = trim($input["password"] ?? '');
 
 if (!$email || !$password) {
     http_response_code(400);
@@ -29,45 +22,37 @@ if (!$email || !$password) {
     exit;
 }
 
-// Connect to DB
-$database = new Database();
-$conn = $database->getConnection();
+try {
+    $database = new Database();
+    $conn = $database->getConnection();
 
-// Look up user
-$query = "SELECT id, name, email, password, role FROM users WHERE email = :email LIMIT 1";
-$stmt = $conn->prepare($query);
-$stmt->bindParam(":email", $email);
-$stmt->execute();
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $query = "SELECT id, name, email, password, role FROM users WHERE email = :email LIMIT 1";
+    $stmt = $conn->prepare($query);
+    $stmt->bindParam(":email", $email);
+    $stmt->execute();
 
-if (!$user) {
-    http_response_code(401);
-    echo json_encode(["error" => "User not found"]);
-    exit;
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user || !password_verify($password, $user["password"])) {
+        http_response_code(401);
+        echo json_encode(["error" => "Invalid credentials"]);
+        exit;
+    }
+
+    $token = bin2hex(random_bytes(16)) . ":" . $user["id"];
+
+    echo json_encode([
+        "message" => "Login successful",
+        "user" => [
+            "id" => $user["id"],
+            "name" => $user["name"],
+            "email" => $user["email"],
+            "role" => $user["role"]
+        ],
+        "token" => $token
+    ]);
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(["error" => "Server error", "details" => $e->getMessage()]);
 }
-
-if (!password_verify($password, $user["password"])) {
-    http_response_code(401);
-    echo json_encode(["error" => "Incorrect password"]);
-    exit;
-}
-
-// Generate token
-$token = bin2hex(random_bytes(16)) . ":" . $user["id"];
-
-// Always clean output buffer just in case
-if (ob_get_length()) {
-    ob_clean();
-}
-
-echo json_encode([
-    "message" => "Login successful",
-    "user" => [
-        "id" => $user["id"],
-        "name" => $user["name"],
-        "email" => $user["email"],
-        "role" => $user["role"]
-    ],
-    "token" => $token
-]);
-exit;
+?>
