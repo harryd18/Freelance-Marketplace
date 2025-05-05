@@ -281,10 +281,8 @@
 ///////////////////////////////////////////////////
 
 import React, { useEffect, useState } from "react";
-import {
-  getProtectedData,
-  postJob
-} from "../api"; // Adjust path if needed
+import { getProtectedData, postJob, deleteJob, updateJob } from '../api/api';
+
 
 function ClientDashboard() {
   const [user, setUser] = useState(null);
