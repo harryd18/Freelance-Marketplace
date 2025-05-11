@@ -1,17 +1,8 @@
 <?php
-// header("Access-Control-Allow-Origin: http://localhost:3000");
-// header("Access-Control-Allow-Methods: POST, OPTIONS");
-// header("Access-Control-Allow-Headers: Content-Type, Authorization");
-// header("Content-Type: application/json; charset=UTF-8");
+
 
 include_once "../config/db.php";
 require_once __DIR__ . "/cors.php";
-
-// Handle preflight request
-// if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
-//     http_response_code(200);
-//     exit;
-// }
 
 $headers = getallheaders();
 $authHeader = $headers["Authorization"] ?? '';
@@ -57,7 +48,7 @@ if (!$jobId || !$amount) {
     exit;
 }
 
-// Check if user already placed a bid on this job
+//This is for checking if user already placed a bid on this job or not
 $check = $conn->prepare("SELECT id FROM bids WHERE freelancer_id = ? AND job_id = ?");
 $check->execute([$user["id"], $jobId]);
 
